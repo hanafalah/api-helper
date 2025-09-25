@@ -104,7 +104,7 @@ class ModuleApiAccess extends BaseApiAccess implements ContractsApiAccess
         'api-helper.expiration' => $custom
       ]);
     }
-    $expiration = $custom ?? $this->__expiration_config ?? 3600;
+    $expiration = $custom ?? config('api-helper.expiration',$this->__expiration_config ?? 3600);
     return $expiration;
   }
 
