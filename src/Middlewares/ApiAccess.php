@@ -4,7 +4,6 @@ namespace Hanafalah\ApiHelper\Middlewares;
 
 use Hanafalah\ApiHelper\Facades;
 use Closure;
-use Illuminate\Support\Facades\Auth;
 
 class ApiAccess
 {
@@ -17,9 +16,13 @@ class ApiAccess
      */
     public function handle($request, Closure $next)
     {
-        Facades\ApiAccess::init()->accessOnLogin(function ($api_access) {
-            //IF YOU HAVE ANY TODO CONCEPT
-        });
+        try {
+            Facades\ApiAccess::init()->accessOnLogin(function ($api_access) {
+                //IF YOU HAVE ANY TODO CONCEPT
+            });
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
         return $next($request);
     }
 }

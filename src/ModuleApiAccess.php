@@ -97,14 +97,14 @@ class ModuleApiAccess extends BaseApiAccess implements ContractsApiAccess
    *
    * @return int The expiration time in minutes.
    */
-  public function expiration(?int $custom = null): int
+  public function expiration(?int $custom = null): ?int
   {
     if (isset($custom)) {
       config([
         'api-helper.expiration' => $custom
       ]);
     }
-    $expiration = $custom ?? $this->__expiration_config ?? 3600;
+    $expiration = $custom ?? config('api-helper.expiration') ?? $this->__expiration_config ?? 3600*24;
     return $expiration;
   }
 
@@ -139,5 +139,6 @@ class ModuleApiAccess extends BaseApiAccess implements ContractsApiAccess
     ], function () use ($callback) {
       $callback();
     });
+
   }
 }

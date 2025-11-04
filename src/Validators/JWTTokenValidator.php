@@ -26,25 +26,30 @@ class JWTTokenValidator extends Environment
 
     public function tokenValidator(): self
     {
-        // if (isset($this->auth?->exp)){
-        //     $this->setTimestamp($this->auth->exp)->timeValidator();
-        // }
-        //INIT KE SANCTUM AUTH
-        if (!Auth::check()){
-            if (isset($this->auth->data->id)){
-                $user = $this->UserModel()->findOrFail($this->auth->data->id);
-                Auth::user($user);
-            }else{
-                Auth::attempt([
-                    "username" => $this->auth->data->username,
-                    "password" => $this->auth->data->password
-                ]);
+        if (!Auth::check()) {
+            $data = $this->auth->data ?? null;
+
+            if (!$data) {
+                throw new \Exception('Auth data is missing');
             }
 
+            if (isset($data->id)) {
+                $user = $this->UserModel()->findOrFail($data->id);
+                Auth::login($user);
+            } else {
+                if (!is_string($data->username ?? null) || !is_string($data->password ?? null)) {
+                    throw new \Exception('Invalid username or password format');
+                }
+                Auth::attempt([
+                    "username" => $data->username,
+                    "password" => $data->password
+                ]);
+            }
         }
-        // app('auth')->guard('sanctum')->authenticate();
+
         return $this;
     }
+
 
     /**
      * Validates the token of the current instance.

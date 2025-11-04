@@ -52,24 +52,29 @@ class JWTEncryptor extends Environment implements EncryptorInterface
     public function handle(): mixed
     {
         $this->setAlgorithm($this->getApiAccess()->algorithm);
-        switch (self::$__algorithm) {
-            case 'RS256':
-            case 'RS384':
-            case 'RS512':
-                $result = $this->setRsKeys()->processRS();
-            break;
-            case 'ES256':
-            case 'ES384':
-            case 'ES512':
-                $result = $this->setEsKeys()->processES();
-            break;
-            case 'HS256':
-            case 'HS384':
-            case 'HS512':
-                $result = $this->setSecretKey()->processHS();
-            break;
+        try {
+            switch (self::$__algorithm) {
+                case 'RS256':
+                case 'RS384':
+                case 'RS512':
+                    $result = $this->setRsKeys()->processRS();
+                break;
+                case 'ES256':
+                case 'ES384':
+                case 'ES512':
+                    $result = $this->setEsKeys()->processES();
+                break;
+                case 'HS256':
+                case 'HS384':
+                case 'HS512':
+                    $result = $this->setSecretKey()->processHS();
+                break;
+            }
+            return $result;
+        } catch (\Throwable $th) {
+            abort(401);
+            //throw $th;
         }
-        return $result;
     }
 
     /**
@@ -124,11 +129,15 @@ class JWTEncryptor extends Environment implements EncryptorInterface
     {
         $leeway = 60; // misalnya 60 detik toleransi
         JWT::$leeway = $leeway; // Set leeway sebelum decode
-        if ($this->__encrypt) {
-            $this->setupJwtPayload();
-            return JWT::encode($this->__jwt_payload, $key, static::$__algorithm);
-        } else {
-            return JWT::decode(self::$__payload, new Key($key, static::$__algorithm), $this->__rsJwtHeaders);
+        try {
+            if ($this->__encrypt) {
+                $this->setupJwtPayload();
+                return JWT::encode($this->__jwt_payload, $key, static::$__algorithm);
+            } else {
+                return JWT::decode(self::$__payload, new Key($key, static::$__algorithm), $this->__rsJwtHeaders);
+            }
+        } catch (\Exception $e) {
+            abort(401);
         }
     }
 

@@ -41,17 +41,21 @@ trait HasApiTokens
 
     public function setToken(string $name, array $data, array $abilities = ['*'], $expiresAt = null): NewAccessToken
     {
-        $token = $this->token()->updateOrCreate([
+        $expiresAt = $expiresAt
+            ? (is_numeric($expiresAt)
+                ? \Carbon\Carbon::createFromTimestampMs($expiresAt)
+                : \Carbon\Carbon::parse($expiresAt))
+            : now()->addDays(7);
+        $token = $this->PersonalAccessTokenModel()->updateOrCreate([
             'tokenable_type' => $this->getMorphClass(),
             'tokenable_id'   => $this->getKey(),
             'name'           => $name,
             'device_id'      => $_SERVER['HTTP_DEVICE_ID'] ?? null
         ], [
             'token'      => hash('sha256', $data['plainTextToken']),
-            'abilities'  => $abilities,
+            'abilities'  => json_encode($abilities),
             'expires_at' => $expiresAt
         ]);
-
         if (count($data['props']) > 0) {
             foreach ($data['props'] as $key => $prop) $token->{$key} = $prop;
             $token->save();
