@@ -31,12 +31,12 @@ class PersonalAccessToken extends LaravelPersonalAccessToken implements HasAbili
     public static function findToken($token)
     {        
         if (strpos($token, '|') === false) {
-            return static::where('token', hash('sha256', $token))->first();
+            return static::where('token', hash('sha256', $token))->firstOrFail();
         }
 
         [$id, $token] = explode('|', $token, 2);
 
-        if ($instance = static::find($id)) {
+        if ($instance = static::findOrFail($id)) {
             return hash_equals($instance->token, hash('sha256', $token)) ? $instance : null;
         }
     }
